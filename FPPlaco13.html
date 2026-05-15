@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SARL BATISYSTÈME · PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg: #0f172a; --surface: #1e293b; --accent: #6366f1;
+            --text: #f1f5f9; --text-dim: #94a3b8; --success: #22c55e; --warning: #fbbf24;
+        }
+        body.light-mode { --bg: #f8fafc; --surface: #ffffff; --text: #1e293b; --text-dim: #64748b; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); line-height: 1.4; font-size: 13px; transition: 0.3s; }
+        .app-container { max-width: 800px; margin: auto; padding: 10px; padding-bottom: 80px; position: relative; }
+        
+        header { background: linear-gradient(135deg, #6366f1, #a855f7); padding: 25px 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; color: white; position: relative; }
+        
+        .fb-link { position: absolute; top: 15px; left: 15px; width: 35px; height: 35px; border-radius: 50%; background: #1877F2; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 18px; z-index: 1000; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .theme-toggle { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000; transition: 0.3s; }
+        
+        .dimensions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: var(--surface); padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+        .input-group label { font-size: 10px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+        .input-group input { width: 100%; background: rgba(0,0,0,0.1); border: 1px solid #334155; color: var(--text); font-size: 14px; font-weight: 700; padding: 8px; border-radius: 6px; text-align: center; }
+        
+        .tools-bar { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .search-box { display: flex; gap: 5px; }
+        .search-container { position: relative; flex: 1; }
+        .search-container input { width: 100%; padding: 10px 35px 10px 10px; border-radius: 8px; border: 1px solid #334155; background: var(--surface); color: var(--text); }
+        .search-container i { position: absolute; right: 12px; top: 12px; color: var(--text-dim); }
+        
+        .add-btn { background: var(--accent); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; font-size: 18px; }
+        
+        .toggle-mode { background: var(--surface); display: flex; border-radius: 8px; padding: 4px; border: 1px solid #334155; }
+        .toggle-btn { flex: 1; padding: 6px; text-align: center; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: 0.3s; }
+        .toggle-btn.active { background: var(--accent); color: white; }
+        
+        .table-scroll { overflow-x: auto; background: var(--surface); border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(0,0,0,0.05); padding: 12px; text-align: right; font-size: 11px; color: var(--text-dim); border-bottom: 2px solid rgba(0,0,0,0.1); }
+        td { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        
+        .item-name-cell { display: flex; align-items: center; gap: 8px; }
+        .delete-item-btn { color: #ef4444; cursor: pointer; font-size: 16px; background: none; border: none; padding: 0; display: flex; align-items: center; }
+
+        .cost-summary { background: var(--surface); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; margin-top: 10px; border: 2px solid var(--accent); }
+        .val { font-size: 20px; font-weight: 800; color: var(--warning); }
+        
+        .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
+        .btn { border: none; border-radius: 8px; padding: 12px; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .edit-input { width: 65px; padding: 5px; background: rgba(0,0,0,0.05); border: 1px solid #334155; color: var(--success); text-align: center; border-radius: 4px; font-weight: 700; }
+        .edit-input-qty { color: var(--warning) !important; } /* تمييز لون الكمية القابلة للتعديل */
+        
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+        .modal-content { background: var(--surface); padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; border: 1px solid var(--accent); }
+        .modal-field { margin-bottom: 12px; }
+        .modal-field label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 5px; }
+        .modal-field input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: var(--bg); color: var(--text); }
+        
+        .print-header { display: none; text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px; }
+
+        @media print { 
+            .no-print, .theme-toggle, .fb-link, .actions, .tools-bar, header { display: none !important; } 
+            .print-header { display: block !important; }
+            .app-container { padding: 0; max-width: 100%; } 
+            body { background: white; color: black; }
+            .modal { display: none !important; }
+            .edit-input { border: none; background: transparent; color: black; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="print-header">
+    <div style="font-size: 12px; font-weight: bold; letter-spacing: 2px;">BY OOPSANOO</div>
+    <h1 style="font-size: 26px; margin: 5px 0;">SARL BATISYSTÈME</h1>
+</div>
+
+<div class="app-container">
+    <header class="no-print">
+        <a href="https://www.facebook.com/abdelhamid31.mansouri31?mibextid=ZbWKwL" target="_blank" class="fb-link">
+            <i class="fab fa-facebook-f"></i>
+        </a>
+        <div class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-sun" id="themeIcon"></i></div>
+        <div style="font-size: 10px; font-weight: 700; letter-spacing: 2px;">BY OOPSANOO</div>
+        <h1>SARL BATISYSTÈME</h1>
+    </header>
+
+    <div class="dimensions-grid">
+        <div class="input-group"><label>الطول (م)</label><input type="number" id="inputLen" oninput="syncDimensions('dim')"></div>
+        <div class="input-group"><label>العرض (م)</label><input type="number" id="inputWid" oninput="syncDimensions('dim')"></div>
+        <div class="input-group"><label>المساحة (م²)</label><input type="number" id="areaInput" value="100" oninput="syncDimensions('area')"></div>
+    </div>
+
+    <div class="tools-bar no-print">
+        <div class="search-box">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="بحث عن مادة..." oninput="render()">
+            </div>
+            <button class="add-btn" onclick="openAddModal()"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="toggle-mode" onclick="toggleProjectMode()">
+            <div id="btnSimple" class="toggle-btn active">بسيط</div>
+            <div id="btnDecor" class="toggle-btn">ديكور</div>
+        </div>
+    </div>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>المادة</th>
+                    <th>السعر (دج)</th>
+                    <th>الكمية</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="cost-summary">
+        <div>
+            <div style="font-size: 11px; color: var(--text-dim);">إجمالي التكلفة</div>
+            <div class="val" id="grandTotal">0 دج</div>
+        </div>
+        <div style="text-align: left;">
+            <div style="font-size: 11px; color: var(--text-dim);">المتوسط / م²</div>
+            <div class="val" id="avgPrice" style="color: var(--success); font-size: 16px;">0 دج</div>
+        </div>
+    </div>
+
+    <div class="actions no-print">
+        <button class="btn" style="background:#ef4444" onclick="window.print()"><i class="fas fa-file-pdf"></i> PDF</button>
+        <button class="btn" style="background:#6366f1" onclick="saveData()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn" style="background:#10b981" onclick="window.print()"><i class="fas fa-print"></i> طباعة</button>
+    </div>
+
+    <div class="project-info">
+        <div class="field full-width">
+            <input type="text" id="pName" placeholder="اسم المشروع / الزبون" style="width:100%; padding:10px; border-radius:8px; background:var(--surface); border:1px solid #334155; color:var(--text);">
+        </div>
+    </div>
+</div>
+
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:15px; color:var(--accent)">إضافة مادة جديدة</h3>
+        <div class="modal-field"><label>اسم المادة</label><input type="text" id="newName" placeholder="مثال: مضخة مائية"></div>
+        <div class="modal-field"><label>السعر (دج)</label><input type="number" id="newPrice" placeholder="0"></div>
+        <div class="modal-field"><label>الكمية</label><input type="number" id="newQty" value="1" min="1"></div>
+        <div class="modal-btns" style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" style="background:var(--success); flex:1" onclick="addNewItem()">إضافة</button>
+            <button class="btn" style="background:var(--text-dim); flex:1" onclick="closeAddModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isDecorMode = false;
+    let items = [
+        { id: "ks_plate", name: "صفيحة KS BA13", p: 1180, options: [{ label: "صفيحة KS BA13", price: 1180 }, { label: "صفيحة KH BA13", price: 1680 }], currentOpt: 0, c_simple: 0.28, c_decor: 0.35 },
+        { id: "f47", name: "F47 5.3ML", p: 420, options: [{ label: "F47 3ML", div: 3, price: 235 }, { label: "F47 4ML", div: 4, price: 310 }, { label: "F47 5.3ML", div: 5.3, price: 420 }], currentOpt: 2 },
+        { id: "cr2", name: "CR2 Cornière", p: 155 },
+        { id: "cheville", name: "CHEVILLE A FRAPPE", p: 4, c_simple: 1.5, c_decor: 2.5 },
+        { id: "suspente", name: "Suspente Pivot", p: 9, c_simple: 1.8, c_decor: 2.8 },
+        { id: "cheville_laito", name: "CHEVILLE LAITO M6", p: 12.5, c_simple: 1.8, c_decor: 2.8 },
+        { id: "tige", name: "Tige Filetée", p: 45, c_simple: 1.8, c_decor: 2.8 },
+        { id: "vis", name: "Vis 25mm (U)", p: 1.1, c_simple: 12, c_decor: 18 },
+        { id: "bande", name: "Bande à joint", p: 4.5, c_simple: 1.5, c_decor: 2.2 },
+        { id: "enduit", name: "Enduit 25kg", p: 120, c_simple: 0.35, c_decor: 0.5 }
+    ];
+
+    function openAddModal() { document.getElementById('addModal').style.display = 'flex'; }
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    function addNewItem() {
+        const name = document.getElementById('newName').value;
+        const price = parseFloat(document.getElementById('newPrice').value) || 0;
+        const qty = parseFloat(document.getElementById('newQty').value) || 1;
+        
+        if (name) {
+            // إضافة المادة مع حفظ كميتها المخصصة الافتراضية
+            items.push({ 
+                id: "custom_" + Date.now(), 
+                name: name, 
+                p: price, 
+                customQty: qty, // حفظ الكمية المدخلة
+                isCustom: true 
+            });
+            render(); 
+            closeAddModal();
+            document.getElementById('newName').value = ''; 
+            document.getElementById('newPrice').value = '';
+            document.getElementById('newQty').value = '1';
+        }
+    }
+
+    function deleteItem(index) {
+        if(confirm("حذف هذه المادة؟")) { items.splice(index, 1); render(); }
+    }
+
+    // دالة لتحديث الكمية من داخل الجدول مباشرة للمواد المخصصة
+    function updateCustomQty(i, v) {
+        if(items[i].isCustom) {
+            items[i].customQty = parseFloat(v) || 0;
+            calculate();
+        }
+    }
+
+    function render() {
+        const tbody = document.getElementById('tableBody');
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        tbody.innerHTML = '';
+        items.forEach((item, i) => {
+            const displayName = (item.id === 'f47' || item.id === 'ks_plate') ? item.options[item.currentOpt].label : item.name;
+            if (displayName.toLowerCase().includes(searchTerm)) {
+                const tr = document.createElement('tr');
+                const isCustom = item.isCustom;
+                
+                tr.innerHTML = `
+                    <td>
+                        <div class="item-name-cell">
+                            ${isCustom ? `<button class="delete-item-btn" onclick="deleteItem(${i})"><i class="fas fa-minus-circle"></i></button>` : ''}
+                            <span onclick="${(item.id==='f47'||item.id==='ks_plate')?`toggleItem(${i})`:''}" style="${(item.id==='f47'||item.id==='ks_plate')?'cursor:pointer; color:var(--accent); font-weight:bold;':''}">
+                                ${displayName} ${(item.id==='f47'||item.id==='ks_plate')?'🔄':''}
+                            </span>
+                        </div>
+                    </td>
+                    <td><input type="number" class="edit-input" value="${item.p}" oninput="updatePrice(${i}, this.value)"></td>
+                    <td>
+                        <input type="number" 
+                               class="edit-input ${isCustom ? 'edit-input-qty' : ''}" 
+                               id="q-${i}" 
+                               value="${isCustom ? item.customQty : 0}" 
+                               ${isCustom ? `oninput="updateCustomQty(${i}, this.value)"` : 'readonly'}>
+                    </td>
+                    <td id="t-${i}" style="font-weight:bold">0</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+        calculate();
+    }
+
+    function updatePrice(i, v) { items[i].p = parseFloat(v) || 0; calculate(); }
+    function toggleItem(i) {
+        items[i].currentOpt = (items[i].currentOpt + 1) % items[i].options.length;
+        items[i].p = items[i].options[items[i].currentOpt].price;
+        render();
+    }
+
+    function calculate() {
+        const area = parseFloat(document.getElementById('areaInput').value) || 0;
+        const l = parseFloat(document.getElementById('inputLen').value) || 0;
+        const w = parseFloat(document.getElementById('inputWid').value) || 0;
+        let total = 0;
+        
+        items.forEach((item, i) => {
+            const qCell = document.getElementById(`q-${i}`);
+            if (!qCell) return;
+            let q = 0;
+            
+            if (item.isCustom) {
+                q = item.customQty; // الاعتماد على الكمية المخصصة المدخلة والمعدلة من الجدول
+            } else {
+                const coeff = isDecorMode ? (item.c_decor || 0) : (item.c_simple || 0);
+                if (item.id === "ks_plate") q = area / 3.6;
+                else if (item.id === "f47") q = (area * (isDecorMode ? 2.5 : 2)) / item.options[item.currentOpt].div;
+                else if (item.id === "cr2") q = (l > 0 && w > 0) ? ((l + w) * 2) / 3 : 0;
+                else q = coeff * area;
+                q = Math.ceil(q);
+                qCell.value = q; // تحديث خانة القراءة فقط للمواد السيستم
+            }
+            
+            const sub = q * item.p;
+            document.getElementById(`t-${i}`).innerText = Math.round(sub).toLocaleString();
+            total += sub;
+        });
+        
+        document.getElementById('grandTotal').innerText = Math.round(total).toLocaleString() + " دج";
+        document.getElementById('avgPrice').innerText = area > 0 ? Math.round(total/area).toLocaleString() + " دج" : "0 دج";
+    }
+
+    function syncDimensions(type) {
+        const l = parseFloat(document.getElementById('inputLen').value) || 0;
+        const w = parseFloat(document.getElementById('inputWid').value) || 0;
+        if (type === 'dim' && l > 0 && w > 0) document.getElementById('areaInput').value = (l * w).toFixed(2);
+        calculate();
+    }
+
+    function toggleProjectMode() {
+        isDecorMode = !isDecorMode;
+        document.getElementById('btnSimple').classList.toggle('active');
+        document.getElementById('btnDecor').classList.toggle('active');
+        calculate();
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        document.getElementById('themeIcon').classList.toggle('fa-sun');
+        document.getElementById('themeIcon').classList.toggle('fa-moon');
+    }
+
+    function saveData() {
+        const data = { prices: items.map(it => ({id: it.id, p: it.p, q: it.customQty, isCustom: it.isCustom, name: it.name})), pName: document.getElementById('pName').value };
+        localStorage.setItem('sarlData', JSON.stringify(data));
+        alert('✅ SARL BATISYSTÈME:\nتم حفظ البيانات بنجاح');
+    }
+
+    window.onload = () => { render(); };
+</script>
+</body>
+</html>
+
